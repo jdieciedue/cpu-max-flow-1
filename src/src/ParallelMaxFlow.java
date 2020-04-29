@@ -1,23 +1,22 @@
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.*;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class ParallelMaxFlow {
 
+    private static int numThreads;
     private static int size;
     private static int s;
     private static int t;
     private static boolean[] visited;
     private static int[] parent;
     private static int[][] adjacencyMatrix;
-    private static LinkedList<Integer> queue;
+    private static ConcurrentLinkedQueue<Integer> queue;
 
-    public static void main(String[] args) {
-        populateMatrix(args[0]);
-        ParallelMaxFlow p = new ParallelMaxFlow();
-        int flow = p.fordFulkerson();
-        System.out.println(flow);
+    public ParallelMaxFlow(String file_name, int num_threads) {
+        populateMatrix(file_name);
+        this.numThreads = num_threads;
     }
 
     public int fordFulkerson() {
@@ -25,7 +24,7 @@ public class ParallelMaxFlow {
         for (int i = 0; i < size; i++) {
             parent[i] = 0;
         }
-        while (sequentialBFS()) {
+        while (parallelBFS()) {
             int path_flow = Integer.MAX_VALUE;
             for (int v=t; v!=s; v=parent[v]) {
                 int u = parent[v];
@@ -41,36 +40,33 @@ public class ParallelMaxFlow {
         return max_flow;
     }
 
-    boolean sequentialBFS() {
+    boolean parallelBFS() {
         for(int i=0; i<size; ++i) {
             visited[i] = false;
         }
-        queue = new LinkedList<>();
+        queue = new ConcurrentLinkedQueue<>();
         queue.add(s);
         visited[s] = true;
         parent[s]=-1;
 
-        while (queue.size()!=0) {
+        while (queue.size() != 0) {
             int u = queue.poll();
-            NeighborAdd.parallelAdd(u, 3);
+            NeighborAdd.parallelAdd(u, numThreads);
         }
 
         return (visited[t] == true);
     }
 
-    public static class NeighborAdd implements Runnable{
+    public static class NeighborAdd implements Runnable {
 
         private int start;
         private int end;
         private int row;
-        private int id;
-        private static final ReentrantLock lock = new ReentrantLock();
 
         private NeighborAdd(int start, int end, int row, int id) {
             this.start = start;
             this.end = end;
             this.row = row;
-            this.id = id;
         }
 
         public static void parallelAdd(int row, int numThreads){
@@ -100,9 +96,7 @@ public class ParallelMaxFlow {
             int i = this.start;
             while (i < end) {
                 if (adjacencyMatrix[row][i] > 0 && !visited[i]) {
-                    lock.lock();
                     queue.add(i);
-                    lock.unlock();
                     parent[i] = row;
                     visited[i] = true;
                 }

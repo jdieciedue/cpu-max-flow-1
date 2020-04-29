@@ -3,7 +3,7 @@ import java.lang.*;
 import java.io.*;
 import java.util.LinkedList;
 
-class SequentialMaxFlow {
+public class SequentialMaxFlow {
     private static int size;
     private static int s;
     private static int t;
@@ -12,10 +12,8 @@ class SequentialMaxFlow {
     private static int[][] adjacencyMatrix;
     private static LinkedList<Integer> queue;
 
-    public static void main (String[] args) {
-        populateMatrix(args[0]);
-        SequentialMaxFlow m = new SequentialMaxFlow();
-        System.out.println("The maximum possible flow is " + m.fordFulkerson());
+    public SequentialMaxFlow(String file_name) {
+        populateMatrix(file_name);
     }
 
     public int fordFulkerson() {
@@ -80,14 +78,5 @@ class SequentialMaxFlow {
         t = size-1;
         parent = new int[size];
         visited = new boolean[size];
-    }
-
-    private static void printMatrix() {
-        for (int i = 0; i < size; i++) {
-            for (int j = 0; j < size; j++) {
-                System.out.print(adjacencyMatrix[i][j] + " ");
-            }
-            System.out.println();
-        }
     }
 }

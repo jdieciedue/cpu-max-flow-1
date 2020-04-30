@@ -16,7 +16,11 @@ public class ParallelMaxFlow {
 
     public ParallelMaxFlow(String file_name, int num_threads) {
         populateMatrix(file_name);
-        this.numThreads = num_threads;
+        if (num_threads < 1) {
+            this.numThreads = 1;
+        } else {
+            this.numThreads = num_threads;
+        }
     }
 
     // generic ford fulkerson that used a parallel bfs strategy

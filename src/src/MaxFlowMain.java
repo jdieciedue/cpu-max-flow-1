@@ -8,18 +8,22 @@ public class MaxFlowMain {
     private static ParallelMaxFlow p;
 
     public static void main (String[] args) {
+        // parse the command line arguments
         parseArgs(args);
 
+        // find the maxflow using the sequential algorithm and measure elapsed time
         long start = System.currentTimeMillis();
         int seq_max_flow = s.fordFulkerson();
         long end = System.currentTimeMillis();
         long seq_elapsed = end - start;
 
+        // find the maxflow using the parallel algorithm and measure elapsed time
         start = System.currentTimeMillis();
         int par_max_flow = p.fordFulkerson();
         end = System.currentTimeMillis();
         long par_elapsed = end - start;
 
+        // Print the results and the time elapsed
         if (par_max_flow == seq_max_flow) {
             System.out.println("The maxflow of the graph is " + par_max_flow);
             System.out.println("Sequential execution time : " + seq_elapsed);
@@ -46,26 +50,32 @@ public class MaxFlowMain {
             writeMatrix(file_name, matrix);
         }
 
+        // create new instances of the sequential and parallel maxflow calulcators
         s = new SequentialMaxFlow(file_name);
         p = new ParallelMaxFlow(file_name, numThreads);
     }
 
+    // generates a random matrix with the following properties
+    // edges that move backwards are less likely to appear
+    // edges from a vertex to itself cannot happen
+    // edges occuring between two verticies occurs at a lower probability, the farther away
+    // from eachother they are
     public static int[][] genRandomMatrix(int size) {
         int[][] matrix = new int[size][size];
+        Random rand = new Random();
         for (int i = 0; i < size; i++) {
             for (int j = 0; j < size; j++) {
-                if ( i < j) {
-                    Random rand = new Random();
-                    int rand_int = rand.nextInt(size - i);
+                if ( i < j) {           // edges that move "backwards"
+                    int diff = Math.abs(i - j);
+                    int rand_int = rand.nextInt(size - diff);
                     if (rand_int != 0) {
                         rand_int = rand.nextInt(10);
                     }
                     matrix[i][j] = rand_int;
-                } else if (i == j) {
+                } else if (i == j) {    // edges from vertex to itself
                     matrix[i][j] = 0;
-                } else {
-                    Random rand = new Random();
-                    int rand_int = rand.nextInt(75);
+                } else {                // all other edges
+                    int rand_int = rand.nextInt(5*size);
                     if (rand_int == 0) {
                         rand_int = rand.nextInt(10);
                     } else {
@@ -78,6 +88,7 @@ public class MaxFlowMain {
         return matrix;
     }
 
+    // writes a matrix to the given text file
     public static void writeMatrix(String filename, int[][] matrix) {
         try {
             BufferedWriter bw = new BufferedWriter(new FileWriter(filename));

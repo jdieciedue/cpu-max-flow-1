@@ -19,12 +19,15 @@ public class ParallelMaxFlow {
         this.numThreads = num_threads;
     }
 
+    // generic ford fulkerson that used a parallel bfs strategy
     public int fordFulkerson() {
         int max_flow = 0;
         for (int i = 0; i < size; i++) {
             parent[i] = 0;
         }
+        // continuously update the max flow while a path from source to sink exists
         while (parallelBFS()) {
+            // find the maximum possible flow along the path and update the pathflows
             int path_flow = Integer.MAX_VALUE;
             for (int v=t; v!=s; v=parent[v]) {
                 int u = parent[v];
@@ -49,6 +52,7 @@ public class ParallelMaxFlow {
         visited[s] = true;
         parent[s]=-1;
 
+        // does the same search as sequential but uses multiple threads to search for neighbors of a given vertex
         while (queue.size() != 0) {
             int u = queue.poll();
             NeighborAdd.parallelAdd(u, numThreads);
@@ -63,22 +67,24 @@ public class ParallelMaxFlow {
         private int end;
         private int row;
 
-        private NeighborAdd(int start, int end, int row, int id) {
+        // holds onto the start and end index for the thread to check
+        private NeighborAdd(int start, int end, int row) {
             this.start = start;
             this.end = end;
             this.row = row;
         }
 
+        // method to initialize and start threads for the parallel addition to the queue
         public static void parallelAdd(int row, int numThreads){
             int chunk_size = size / numThreads;
             int start = 0;
             int end = chunk_size;
             ArrayList<Thread> threads = new ArrayList<>();
             for (int i = 0; i < numThreads; i++){
-                if(i == numThreads - 1) {
+                if (i == numThreads - 1) {
                     end = size;
                 }
-                Thread t = new Thread(new NeighborAdd(start, end, row, i));
+                Thread t = new Thread(new NeighborAdd(start, end, row));
                 start += chunk_size;
                 end += chunk_size;
                 threads.add(t);
@@ -93,6 +99,7 @@ public class ParallelMaxFlow {
 
         @Override
         public void run() {
+            // update the queue, visited, and parent for the given index values
             int i = this.start;
             while (i < end) {
                 if (adjacencyMatrix[row][i] > 0 && !visited[i]) {

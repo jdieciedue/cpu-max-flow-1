@@ -10,10 +10,24 @@ public class MaxFlowMain {
     public static void main (String[] args) {
         parseArgs(args);
 
-        System.out.println("The maximum possible flow is " + s.fordFulkerson());
+        long start = System.currentTimeMillis();
+        int seq_max_flow = s.fordFulkerson();
+        long end = System.currentTimeMillis();
+        long seq_elapsed = end - start;
 
-        System.out.println("The maximum possible flow is " + p.fordFulkerson());
+        start = System.currentTimeMillis();
+        int par_max_flow = p.fordFulkerson();
+        end = System.currentTimeMillis();
+        long par_elapsed = end - start;
 
+        if (par_max_flow == seq_max_flow) {
+            System.out.println("The maxflow of the graph is " + par_max_flow);
+            System.out.println("Sequential execution time : " + seq_elapsed);
+            System.out.println("Parallel execution time : " + par_elapsed);
+        } else {
+            System.out.println(par_max_flow + " " + seq_max_flow);
+            System.out.println("Error: Sequential and Parralel found different max flows");
+        }
     }
 
     public static void parseArgs(String[] args) {

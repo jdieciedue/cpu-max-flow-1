@@ -12,7 +12,7 @@ For example
   
 This will run the two algorithms on the given graph which is stored as an adjacency matrix. If you wanted to create and test your own graph they require the input to look like the following.
 
-<size>
+<<size>>
 [size x size]
   
 Where size is an integer and size x size is a square matrix of numbers where each number is separated by a space and only a space. For example
